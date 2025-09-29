@@ -3,25 +3,25 @@
 #include <LiquidCrystal_I2C.h>
 #include <DHT.h>
 
-// Configurări pentru DHT11
+// DHT11
 #define DHTPIN A0        // Pinul conectat la DHT11
 #define DHTTYPE DHT11    // Tipul senzorului DHT11
 DHT dht(DHTPIN, DHTTYPE);
 
-// Configurări pentru PulseOximeter
+// PulseOximeter
 #define REPORTING_PERIOD_MS  7000
 #define PULSE_THRESHOLD      70
 #define HUMIDITY_THRESHOLD   50
 
-// Configurări pentru LED-uri
+// LED-uri
 #define GREEN_LED 12
 #define RED_LED   13
 
-// Configurări pentru LCD
+// LCD
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 PulseOximeter pox;
 
-// Variabile pentru procesare
+
 float pulse_sum = 0;
 float pulse_avg = 0;
 
@@ -47,7 +47,6 @@ void onBeatDetected()
 
 void setup()
 {
-    // Inițializări
     Serial.begin(115200);
     dht.begin(); // Inițializare DHT11
 
@@ -69,7 +68,6 @@ void setup()
     pinMode(RED_LED, OUTPUT);
     pox.setOnBeatDetectedCallback(onBeatDetected);
 
-    // Start measurement immediately
     startMeasurement(); // Start collecting data
 }
 
@@ -80,21 +78,18 @@ void loop()
     digitalWrite(GREEN_LED, LOW);
     digitalWrite(RED_LED, LOW);
 
-    // Start measuring when flag is set
     if (is_measurement_in_progress) {
-        // Collect data for 20 seconds
+        // Collect data for 15 seconds
         if (millis() - startTime <= 15000) {
             Heart_rate = pox.getHeartRate();
             Humidity = dht.readHumidity();
             Temperature = dht.readTemperature();
 
-            // Verifică validitatea datelor
             if (isnan(Humidity) || isnan(Temperature)) {
                 Serial.println("Eroare la citirea senzorului DHT!");
                 return;
             }
 
-            // Afișează pe Serial Monitor
             Serial.print("Heart rate: ");
             Serial.println(Heart_rate);
             Serial.print("Humidity: ");
@@ -104,7 +99,6 @@ void loop()
             Serial.print(Temperature);
             Serial.println(" °C");
 
-            // Afișează pe LCD
             lcd.setCursor(0, 0);
             lcd.print("HR: ");
             lcd.print(Heart_rate);
@@ -115,7 +109,6 @@ void loop()
             lcd.print(Humidity);
             lcd.print(" %");
 
-            // Salvează datele pentru analiză
             if (Heart_rate >= 60) {
                 pulse_sum += Heart_rate;
                 humidity_sum += Humidity;
@@ -130,9 +123,9 @@ void loop()
             Serial.println("Average Heart Rate: " + String(pulse_avg));
 
             if (humidity_avg > HUMIDITY_THRESHOLD && pulse_avg > PULSE_THRESHOLD) {
-                is_lying = 1; // Lying detected
+                is_lying = 1; // Lie
             } else {
-                is_lying = 0; // Truth detected
+                is_lying = 0; // Truth
             }
 
             // Display result on LCD
@@ -148,10 +141,9 @@ void loop()
     }
 }
 
-// Function to start the 10-second measurement
+// Function to start the 15 second measurement
 void startMeasurement()
 {
-    // Reset variables for new measurement
     pulse_sum = 0;
     humidity_sum = 0;
     count = 0;
